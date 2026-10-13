@@ -80,7 +80,7 @@ th { color: #6b7280; font-weight: 600; font-size: 12px; text-transform: uppercas
 .nota { color: #6b7280; font-size: 12px; font-weight: normal; }
 
 /* HU-15: filtros, resultados y paginación */
-.filtros { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px 14px; align-items: end; }
+.filtros { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px 14px; align-items: end; }
 .filtros label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #374151; }
 .filtros input, .filtros select { padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
 .filtros .acciones { grid-column: 1 / -1; }

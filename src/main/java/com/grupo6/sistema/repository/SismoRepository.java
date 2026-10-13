@@ -11,6 +11,7 @@ import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -97,6 +98,14 @@ public class SismoRepository extends RepositorioJpa<Sismo> {
 
     /** Condiciones JPQL de cada filtro. Alias: s = sismo, dis = distrito, pro = provincia, dep = departamento. */
     private void agregarCondiciones(SismoBusqueda b, List<String> condiciones, Map<String, Object> parametros) {
+        if (!b.getTerminoTexto().isEmpty()) {
+            String referencia = b.getTerminoTexto().toLowerCase(Locale.ROOT).replace("!", "!!").replace("%", "!%").replace("_", "!_");
+            condiciones.add("(LOWER(s.codigo) = :codigo OR LOWER(s.referencia) LIKE :referencia ESCAPE '!'"
+                    + " OR LOWER(dis.nombre) LIKE :referencia ESCAPE '!'"
+                    + " OR LOWER(pro.nombre) LIKE :referencia ESCAPE '!')");
+            parametros.put("codigo", b.getTerminoTexto().toLowerCase(Locale.ROOT));
+            parametros.put("referencia", "%" + referencia + "%");
+        }
         if (b.getDepartamentoId() != null) {
             condiciones.add("dep.id = :departamentoId");
             parametros.put("departamentoId", b.getDepartamentoId());
@@ -118,6 +127,6 @@ public class SismoRepository extends RepositorioJpa<Sismo> {
             condiciones.add("s.fechaHora < :hasta");
             parametros.put("hasta", b.getHasta().plusDays(1).atStartOfDay());
         }
-        // HU-30 (filtro por estado) y HU-31 (búsqueda por código o referencia) se agregan aquí.
+        // HU-30 (filtro por estado) se agrega aquí.
     }
 }

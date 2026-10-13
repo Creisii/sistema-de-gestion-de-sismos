@@ -31,7 +31,7 @@ Para volver a los datos de ejemplo (por ejemplo, antes de grabar el video), ejec
 | HU-10 | Gestionar estaciones de monitoreo | Víctor | ⏳ |
 | HU-11 | Asociar un sismo a la estación que lo registró | Cristian | ⏳ |
 | HU-30 | Filtrar sismos por estado del evento | Cristian | ⏳ |
-| HU-31 | Buscar un sismo por código o referencia geográfica | Nick | ⏳ |
+| HU-31 | Buscar un sismo por código o referencia geográfica | Nick | ✅ |
 
 Base del proyecto (José): migración a JPA y MySQL, script SQL, entidades con relaciones y repositorios JPA.
 
@@ -89,15 +89,16 @@ database/   01_schema.sql y 02_datos_iniciales.sql
   `DistritoRepository.listarPorProvincia` ya existen. El formulario debe seguir enviando `distritoId`.
 - **HU-11 Sismo y estación (Cristian):** la relación `Sismo N ── 1 Estación` y la regla de estación inactiva
   ya están en la base (`SismoValidador`). Queda completar los criterios de la HU en las pantallas.
-- **HU-30 Estado (Cristian) y HU-31 Código o referencia (Nick):** agregar el filtro en `SismoBusqueda`
-  (campo, lectura en `desdeRequest` y en `parametrosFiltro`), su condición JPQL en
+- **HU-30 Estado (Cristian):** agregar el filtro en `SismoBusqueda`, su condición JPQL en
   `SismoRepository.agregarCondiciones` y el campo en el formulario de filtros de `sismos/lista.jsp`.
+- **HU-31 Código o referencia geográfica (Nick):** implementada en el listado de sismos; busca códigos
+  exactos y coincidencias parciales sin distinguir mayúsculas en la referencia, distrito o provincia.
 
 ## Rutas
 
 | Ruta | Qué hace |
 |---|---|
-| GET `/sismos` | Lista con filtros (`departamentoId`, `magnitudMin`, `magnitudMax`, `desde`, `hasta`), orden (`orden`, `dir`) y página (`pagina`) |
+| GET `/sismos` | Lista con búsqueda (`buscar` por código o ubicación), filtros (`departamentoId`, `magnitudMin`, `magnitudMax`, `desde`, `hasta`), orden (`orden`, `dir`) y página (`pagina`) |
 | GET/POST `/sismos/nuevo`, `/sismos/editar?id=X`, `/sismos/eliminar?id=X` | CRUD de sismos |
 | GET `/sismos/detalle?id=X` | Detalle |
 | GET `/ubicaciones`, `?departamentoId=X`, `?provinciaId=Y` | Catálogo de ubicaciones por nivel |

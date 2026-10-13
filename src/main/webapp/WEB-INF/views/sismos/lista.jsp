@@ -34,9 +34,14 @@
         </div>
     </c:if>
 
-    <%-- HU-15: filtros por departamento, rango de magnitud y periodo --%>
+    <%-- HU-15: filtros por departamento, rango de magnitud y periodo; HU-31: código o ubicación --%>
     <section class="tarjeta">
         <form method="get" action="${ctx}/sismos" class="filtros">
+            <label>
+                <span>Código o referencia geográfica</span>
+                <input name="buscar" type="search" maxlength="150" placeholder="Ej. SIS-2026-001, Chivay o Caylloma"
+                       value="<c:out value='${busqueda.terminoTexto}'/>">
+            </label>
             <label>
                 <span>Departamento</span>
                 <select name="departamentoId">
@@ -104,6 +109,10 @@
                     <c:when test="${empty sismos}">
                         <tr><td colspan="8" class="vacio">
                             <c:choose>
+                                <c:when test="${not empty busqueda.terminoTexto}">
+                                    No se encontraron sismos para &quot;<c:out value="${busqueda.terminoTexto}"/>&quot;.
+                                    Verifique el código o la referencia geográfica.
+                                </c:when>
                                 <c:when test="${busqueda.tieneFiltros}">Ningún sismo cumple los filtros indicados.</c:when>
                                 <c:otherwise>No hay sismos registrados.</c:otherwise>
                             </c:choose>
