@@ -1,0 +1,14 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Barra superior compartida. Antes de incluirla, cada vista define la sección activa:
+    <c:set var="seccion" value="sismos"/>
+    <%@ include file="/WEB-INF/views/comun/barra.jspf" %>
+  Para agregar un módulo nuevo (por ejemplo Estaciones), agregar aquí su enlace.
+--%>
+<div class="barra-superior">
+    <span class="marca">CSSP <span>Sistema de Gestión de Sismos</span></span>
+    <nav class="menu">
+        <a href="${pageContext.request.contextPath}/sismos" class="${seccion eq 'sismos' ? 'activo' : ''}">Sismos</a>
+        <a href="${pageContext.request.contextPath}/ubicaciones" class="${seccion eq 'ubicaciones' ? 'activo' : ''}">Ubicaciones</a>
+    </nav>
+</div>

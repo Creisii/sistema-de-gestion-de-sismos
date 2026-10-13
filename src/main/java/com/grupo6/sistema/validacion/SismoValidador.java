@@ -2,6 +2,7 @@ package com.grupo6.sistema.validacion;
 
 import com.grupo6.sistema.model.EstacionMonitoreo;
 import com.grupo6.sistema.model.Sismo;
+import com.grupo6.sistema.repository.DistritoRepository;
 import com.grupo6.sistema.repository.EstacionMonitoreoRepository;
 import com.grupo6.sistema.repository.SismoRepository;
 
@@ -18,6 +19,7 @@ import java.util.Optional;
  * HU-03: campos obligatorios y código único.
  * HU-04: magnitud, profundidad, coordenadas y fecha no futura.
  * HU-08: estado válido (solo al editar; al registrar siempre es Registrado).
+ * HU-09: la ubicación debe ser un distrito existente en el catálogo.
  * Regla de negocio: una estación inactiva no puede recibir nuevos registros.
  *
  * Devuelve un mapa campo -> mensaje. Si el mapa está vacío, los datos son válidos.
@@ -27,10 +29,13 @@ import java.util.Optional;
 public class SismoValidador {
 
     private final SismoRepository sismos;
+    private final DistritoRepository distritos;
     private final EstacionMonitoreoRepository estaciones;
 
-    public SismoValidador(SismoRepository sismos, EstacionMonitoreoRepository estaciones) {
+    public SismoValidador(SismoRepository sismos, DistritoRepository distritos,
+                          EstacionMonitoreoRepository estaciones) {
         this.sismos = sismos;
+        this.distritos = distritos;
         this.estaciones = estaciones;
     }
 
@@ -49,10 +54,11 @@ public class SismoValidador {
         obligatorio(errores, "profundidad", f.getProfundidad(), "La profundidad es obligatoria.");
         obligatorio(errores, "latitud", f.getLatitud(), "La latitud es obligatoria.");
         obligatorio(errores, "longitud", f.getLongitud(), "La longitud es obligatoria.");
-        obligatorio(errores, "departamento", f.getDepartamento(), "El departamento es obligatorio.");
-        obligatorio(errores, "provincia", f.getProvincia(), "La provincia es obligatoria.");
-        obligatorio(errores, "distritoReferencia", f.getDistritoReferencia(),
-                "El distrito o referencia es obligatorio.");
+        obligatorio(errores, "distritoId", f.getDistritoId(), "La ubicación (distrito) es obligatoria.");
+
+        if (!errores.containsKey("codigo") && f.getCodigo().length() > 20) {
+            errores.put("codigo", "El código no puede superar los 20 caracteres.");
+        }
 
         // ---------- HU-03: código único ----------
         if (!errores.containsKey("codigo")) {
@@ -100,15 +106,27 @@ public class SismoValidador {
             errores.put("intensidad", "La intensidad seleccionada no es válida.");
         }
 
+        // ---------- HU-09: la ubicación debe existir en el catálogo ----------
+        if (!errores.containsKey("distritoId")) {
+            Long distritoId = aId(f.getDistritoId());
+            if (distritoId == null || distritos.buscarPorId(distritoId).isEmpty()) {
+                errores.put("distritoId", "La ubicación seleccionada no existe en el catálogo.");
+            }
+        }
+        if (f.getReferencia().length() > 150) {
+            errores.put("referencia", "La referencia no puede superar los 150 caracteres.");
+        }
+
         // ---------- Regla de negocio: estación existente y activa ----------
-        if (!f.getCodigoEstacion().isBlank()) {
-            Optional<EstacionMonitoreo> estacion = estaciones.buscarPorCodigo(f.getCodigoEstacion());
-            boolean mismaEstacion = !esNuevo
-                    && f.getCodigoEstacion().equalsIgnoreCase(String.valueOf(sismoActual.getCodigoEstacion()));
+        if (!f.getEstacionId().isBlank()) {
+            Long estacionId = aId(f.getEstacionId());
+            Optional<EstacionMonitoreo> estacion = estacionId == null ? Optional.empty() : estaciones.buscarPorId(estacionId);
+            boolean mismaEstacion = !esNuevo && sismoActual.getEstacion() != null
+                    && sismoActual.getEstacion().getId().equals(estacionId);
             if (estacion.isEmpty()) {
-                errores.put("codigoEstacion", "La estación seleccionada no existe.");
+                errores.put("estacionId", "La estación seleccionada no existe.");
             } else if (!estacion.get().isActiva() && !mismaEstacion) {
-                errores.put("codigoEstacion", "La estación " + estacion.get().getCodigo()
+                errores.put("estacionId", "La estación " + estacion.get().getCodigo()
                         + " está inactiva y no puede recibir nuevos registros.");
             }
         }
@@ -155,6 +173,14 @@ public class SismoValidador {
             }
         }
         return false;
+    }
+
+    private static Long aId(String texto) {
+        try {
+            return Long.valueOf(texto.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     /** Convierte un texto a número aceptando coma o punto decimal (4,5 o 4.5). */

@@ -1,48 +1,33 @@
 package com.grupo6.sistema.repository;
 
 import com.grupo6.sistema.model.ReporteAfectacion;
+import com.grupo6.sistema.model.Sismo;
+import jakarta.persistence.EntityManager;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Repositorio CRUD de reportes de afectación en memoria.
- */
-public class ReporteAfectacionRepository {
+/** Repositorio JPA de reportes de afectación (las pantallas llegan en el sprint 3). */
+public class ReporteAfectacionRepository extends RepositorioJpa<ReporteAfectacion> {
 
-    private final List<ReporteAfectacion> datos = new CopyOnWriteArrayList<>();
-    private final AtomicLong siguienteId = new AtomicLong(1);
-
-    public ReporteAfectacion agregar(ReporteAfectacion reporteAfectacion) {
-        reporteAfectacion.setId(siguienteId.getAndIncrement());
-        datos.add(reporteAfectacion);
-        return reporteAfectacion;
+    public ReporteAfectacionRepository() {
+        super(ReporteAfectacion.class);
     }
 
-    public List<ReporteAfectacion> listar() {
-        return List.copyOf(datos);
+    @Override
+    protected String ordenListado() {
+        return "e.fechaHora DESC";
     }
 
-    public Optional<ReporteAfectacion> buscarPorId(long id) {
-        return datos.stream().filter(x -> x.getId() == id).findFirst();
+    @Override
+    protected void prepararRelaciones(EntityManager em, ReporteAfectacion reporte) {
+        reporte.setSismo(em.getReference(Sismo.class, reporte.getSismo().getId()));
     }
 
     public List<ReporteAfectacion> listarPorSismo(long sismoId) {
-        return datos.stream().filter(r -> r.getSismoId() == sismoId).toList();
-    }
-
-    public boolean actualizar(ReporteAfectacion reporteAfectacion) {
-        Optional<ReporteAfectacion> actual = buscarPorId(reporteAfectacion.getId());
-        if (actual.isEmpty()) {
-            return false;
-        }
-        datos.set(datos.indexOf(actual.get()), reporteAfectacion);
-        return true;
-    }
-
-    public boolean eliminar(long id) {
-        return datos.removeIf(x -> x.getId() == id);
+        return consultar(em -> em.createQuery(
+                        "SELECT r FROM ReporteAfectacion r WHERE r.sismo.id = :sismoId ORDER BY r.fechaHora DESC",
+                        ReporteAfectacion.class)
+                .setParameter("sismoId", sismoId)
+                .getResultList(), "No se pudo listar los reportes de afectación.");
     }
 }

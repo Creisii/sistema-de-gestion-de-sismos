@@ -1,8 +1,24 @@
 package com.grupo6.sistema.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Evento sísmico. Se ubica en un distrito del catálogo (HU-09) y, opcionalmente,
+ * indica la estación de monitoreo que lo registró (HU-11).
+ */
+@Entity
+@Table(name = "sismo")
 public class Sismo {
 
     public static final String ESTADO_REGISTRADO = "Registrado";
@@ -23,48 +39,47 @@ public class Sismo {
     private static final DateTimeFormatter FORMATO_TEXTO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter FORMATO_INPUT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "codigo", nullable = false, unique = true, length = 20)
     private String codigo;
+
+    @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
+
+    @Column(name = "magnitud", nullable = false)
     private double magnitud;
+
+    @Column(name = "profundidad", nullable = false)
     private double profundidad;
+
+    @Column(name = "latitud", nullable = false)
     private double latitud;
+
+    @Column(name = "longitud", nullable = false)
     private double longitud;
-    private String departamento;
-    private String provincia;
-    private String distritoReferencia;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "distrito_id", nullable = false)
+    private Distrito distrito;
+
+    /** Punto de referencia opcional, por ejemplo "12 km al SO de Chivay". */
+    @Column(name = "referencia", length = 150)
+    private String referencia;
+
+    @Column(name = "intensidad", length = 10)
     private String intensidad;
+
+    @Column(name = "estado", nullable = false, length = 20)
     private String estado;
-    /** Código de la estación de monitoreo que registró el sismo (relación Estación 1 - N Sismo). */
-    private String codigoEstacion;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "estacion_id")
+    private EstacionMonitoreo estacion;
 
     public Sismo() {
-    }
-
-    public Sismo(Long id, String codigo, LocalDateTime fechaHora, double magnitud,
-                 double profundidad, double latitud, double longitud, String departamento,
-                 String provincia, String distritoReferencia, String intensidad, String estado) {
-        this.id = id;
-        this.codigo = codigo;
-        this.fechaHora = fechaHora;
-        this.magnitud = magnitud;
-        this.profundidad = profundidad;
-        this.latitud = latitud;
-        this.longitud = longitud;
-        this.departamento = departamento;
-        this.provincia = provincia;
-        this.distritoReferencia = distritoReferencia;
-        this.intensidad = intensidad;
-        this.estado = estado;
-    }
-
-    public Sismo(Long id, String codigo, LocalDateTime fechaHora, double magnitud,
-                 double profundidad, double latitud, double longitud, String departamento,
-                 String provincia, String distritoReferencia, String intensidad, String estado,
-                 String codigoEstacion) {
-        this(id, codigo, fechaHora, magnitud, profundidad, latitud, longitud, departamento,
-                provincia, distritoReferencia, intensidad, estado);
-        this.codigoEstacion = codigoEstacion;
     }
 
     public static boolean esEstadoValido(String estado) {
@@ -79,6 +94,10 @@ public class Sismo {
         return false;
     }
 
+    public boolean isEnSeguimiento() {
+        return ESTADO_EN_SEGUIMIENTO.equals(estado);
+    }
+
     public String getClaseEstado() {
         if (estado == null) {
             return "";
@@ -89,6 +108,15 @@ public class Sismo {
             case ESTADO_CERRADO -> "badge badge-cerrado";
             default -> "badge badge-registrado";
         };
+    }
+
+    public String getFechaHoraTexto() {
+        return fechaHora == null ? "" : fechaHora.format(FORMATO_TEXTO);
+    }
+
+    /** Fecha en el formato que espera un input datetime-local (por ejemplo, 2026-08-18T14:32). */
+    public String getFechaHoraInput() {
+        return fechaHora == null ? "" : fechaHora.format(FORMATO_INPUT);
     }
 
     public Long getId() {
@@ -109,21 +137,6 @@ public class Sismo {
 
     public LocalDateTime getFechaHora() {
         return fechaHora;
-    }
-
-    public String getFechaHoraTexto() {
-        if (fechaHora == null) {
-            return "";
-        }
-        return fechaHora.format(FORMATO_TEXTO);
-    }
-
-    /** Fecha en el formato que espera un input datetime-local (por ejemplo, 2026-08-18T14:32). */
-    public String getFechaHoraInput() {
-        if (fechaHora == null) {
-            return "";
-        }
-        return fechaHora.format(FORMATO_INPUT);
     }
 
     public void setFechaHora(LocalDateTime fechaHora) {
@@ -162,28 +175,20 @@ public class Sismo {
         this.longitud = longitud;
     }
 
-    public String getDepartamento() {
-        return departamento;
+    public Distrito getDistrito() {
+        return distrito;
     }
 
-    public void setDepartamento(String departamento) {
-        this.departamento = departamento;
+    public void setDistrito(Distrito distrito) {
+        this.distrito = distrito;
     }
 
-    public String getProvincia() {
-        return provincia;
+    public String getReferencia() {
+        return referencia;
     }
 
-    public void setProvincia(String provincia) {
-        this.provincia = provincia;
-    }
-
-    public String getDistritoReferencia() {
-        return distritoReferencia;
-    }
-
-    public void setDistritoReferencia(String distritoReferencia) {
-        this.distritoReferencia = distritoReferencia;
+    public void setReferencia(String referencia) {
+        this.referencia = referencia;
     }
 
     public String getIntensidad() {
@@ -202,11 +207,11 @@ public class Sismo {
         this.estado = estado;
     }
 
-    public String getCodigoEstacion() {
-        return codigoEstacion;
+    public EstacionMonitoreo getEstacion() {
+        return estacion;
     }
 
-    public void setCodigoEstacion(String codigoEstacion) {
-        this.codigoEstacion = codigoEstacion;
+    public void setEstacion(EstacionMonitoreo estacion) {
+        this.estacion = estacion;
     }
 }

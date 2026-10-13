@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+    <!--
+      Unidad de persistencia del sistema de sismos.
+      RESOURCE_LOCAL: la aplicación maneja sus propias transacciones (EntityTransaction),
+      porque Tomcat no ofrece transacciones JTA como GlassFish.
+      Los datos de conexión (URL, usuario y contraseña) se leen de db.properties en JpaUtil.
+    -->
+    <persistence-unit name="SismosPU" transaction-type="RESOURCE_LOCAL">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <class>com.grupo6.sistema.model.Departamento</class>
+        <class>com.grupo6.sistema.model.Provincia</class>
+        <class>com.grupo6.sistema.model.Distrito</class>
+        <class>com.grupo6.sistema.model.EstacionMonitoreo</class>
+        <class>com.grupo6.sistema.model.Sismo</class>
+        <class>com.grupo6.sistema.model.ReporteAfectacion</class>
+        <class>com.grupo6.sistema.model.SeguimientoSismo</class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <!-- Sin caché compartida: cada consulta lee los datos actuales de MySQL
+             (también los cambios hechos directamente en DBeaver). -->
+        <shared-cache-mode>NONE</shared-cache-mode>
+        <properties>
+            <!-- Las tablas las crea el script database/01_schema.sql, no JPA -->
+            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+            <!-- Tomcat no tiene el agente de EclipseLink para "weaving" -->
+            <property name="eclipselink.weaving" value="false"/>
+            <!-- Muestra en la consola las sentencias SQL que genera JPA -->
+            <property name="eclipselink.logging.level" value="INFO"/>
+            <property name="eclipselink.logging.level.sql" value="FINE"/>
+            <property name="eclipselink.logging.parameters" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>

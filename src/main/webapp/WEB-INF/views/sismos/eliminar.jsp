@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:set var="seccion" value="sismos"/>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <!DOCTYPE html>
 <html lang="es">
@@ -10,10 +11,7 @@
     <link rel="stylesheet" href="${ctx}/css/estilos.css">
 </head>
 <body>
-<div class="barra-superior">
-    <span class="marca">CSSP <span>Sistema de Gestión de Sismos</span></span>
-    <a href="${ctx}/sismos">Sismos</a>
-</div>
+<%@ include file="/WEB-INF/views/comun/barra.jspf" %>
 <main class="contenedor">
     <p class="breadcrumb"><a href="${ctx}/sismos">Sismos</a> /
         <a href="${ctx}/sismos/detalle?id=${sismo.id}"><c:out value="${sismo.codigo}"/></a> / Eliminar</p>
@@ -26,7 +24,7 @@
             <div><span>Código</span><strong><c:out value="${sismo.codigo}"/></strong></div>
             <div><span>Fecha y hora</span><strong><c:out value="${sismo.fechaHoraTexto}"/></strong></div>
             <div><span>Magnitud</span><strong>M <c:out value="${sismo.magnitud}"/></strong></div>
-            <div><span>Referencia</span><strong><c:out value="${sismo.distritoReferencia}, ${sismo.departamento}"/></strong></div>
+            <div><span>Ubicación</span><strong><c:out value="${sismo.distrito.ubicacionCompleta}"/></strong></div>
             <div><span>Estado</span><strong><span class="${sismo.claseEstado}"><c:out value="${sismo.estado}"/></span></strong></div>
         </div>
 

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:set var="seccion" value="sismos"/>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,10 +10,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
 </head>
 <body>
-<div class="barra-superior">
-    <span class="marca">CSSP <span>Sistema de Gestión de Sismos</span></span>
-    <a href="${pageContext.request.contextPath}/sismos">Sismos</a>
-</div>
+<%@ include file="/WEB-INF/views/comun/barra.jspf" %>
 <main class="contenedor">
     <p class="breadcrumb"><a href="${pageContext.request.contextPath}/sismos">Sismos</a> / <c:out value="${sismo.codigo}"/></p>
 
@@ -27,7 +25,7 @@
         <div>
             <h1 style="display:inline-block; margin-right:10px;">Sismo <c:out value="${sismo.codigo}"/></h1>
             <span class="${sismo.claseEstado}"><c:out value="${sismo.estado}"/></span>
-            <p class="subtitulo"><c:out value="${sismo.distritoReferencia}"/>, <c:out value="${sismo.provincia}"/>, <c:out value="${sismo.departamento}"/></p>
+            <p class="subtitulo"><c:out value="${sismo.distrito.ubicacionCompleta}"/></p>
         </div>
         <div class="acciones">
             <a class="boton" href="${pageContext.request.contextPath}/sismos/editar?id=${sismo.id}">Editar</a>
@@ -48,11 +46,12 @@
 
             <div><div class="etiqueta">Latitud</div><div class="valor"><c:out value="${sismo.latitud}"/></div></div>
             <div><div class="etiqueta">Longitud</div><div class="valor"><c:out value="${sismo.longitud}"/></div></div>
-            <div><div class="etiqueta">Estación</div><div class="valor"><c:out value="${empty sismo.codigoEstacion ? 'Sin estación' : sismo.codigoEstacion}"/></div></div>
+            <div><div class="etiqueta">Estación</div><div class="valor"><c:out value="${empty sismo.estacion ? 'Sin estación' : sismo.estacion.codigo.concat(' · ').concat(sismo.estacion.nombre)}"/></div></div>
 
-            <div><div class="etiqueta">Departamento</div><div class="valor"><c:out value="${sismo.departamento}"/></div></div>
-            <div><div class="etiqueta">Provincia</div><div class="valor"><c:out value="${sismo.provincia}"/></div></div>
-            <div><div class="etiqueta">Distrito o referencia</div><div class="valor"><c:out value="${sismo.distritoReferencia}"/></div></div>
+            <div><div class="etiqueta">Departamento</div><div class="valor"><c:out value="${sismo.distrito.provincia.departamento.nombre}"/></div></div>
+            <div><div class="etiqueta">Provincia</div><div class="valor"><c:out value="${sismo.distrito.provincia.nombre}"/></div></div>
+            <div><div class="etiqueta">Distrito</div><div class="valor"><c:out value="${sismo.distrito.nombre}"/> <span class="nota">(ubigeo <c:out value="${sismo.distrito.codigo}"/>)</span></div></div>
+            <div><div class="etiqueta">Referencia</div><div class="valor"><c:out value="${empty sismo.referencia ? '—' : sismo.referencia}"/></div></div>
         </div>
     </section>
 </main>

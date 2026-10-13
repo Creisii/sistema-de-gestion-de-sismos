@@ -1,5 +1,7 @@
 package com.grupo6.sistema.validacion;
 
+import com.grupo6.sistema.model.Distrito;
+import com.grupo6.sistema.model.EstacionMonitoreo;
 import com.grupo6.sistema.model.Sismo;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -21,11 +23,10 @@ public class SismoFormulario {
     private String profundidad = "";
     private String latitud = "";
     private String longitud = "";
-    private String departamento = "";
-    private String provincia = "";
-    private String distritoReferencia = "";
+    private String distritoId = "";
+    private String referencia = "";
     private String intensidad = "";
-    private String codigoEstacion = "";
+    private String estacionId = "";
     private String estado = "";
 
     /** Lee los campos enviados por el formulario. */
@@ -37,11 +38,10 @@ public class SismoFormulario {
         f.profundidad = limpiar(request.getParameter("profundidad"));
         f.latitud = limpiar(request.getParameter("latitud"));
         f.longitud = limpiar(request.getParameter("longitud"));
-        f.departamento = limpiar(request.getParameter("departamento"));
-        f.provincia = limpiar(request.getParameter("provincia"));
-        f.distritoReferencia = limpiar(request.getParameter("distritoReferencia"));
+        f.distritoId = limpiar(request.getParameter("distritoId"));
+        f.referencia = limpiar(request.getParameter("referencia"));
         f.intensidad = limpiar(request.getParameter("intensidad"));
-        f.codigoEstacion = limpiar(request.getParameter("codigoEstacion"));
+        f.estacionId = limpiar(request.getParameter("estacionId"));
         f.estado = limpiar(request.getParameter("estado"));
         return f;
     }
@@ -55,18 +55,18 @@ public class SismoFormulario {
         f.profundidad = String.valueOf(sismo.getProfundidad());
         f.latitud = String.valueOf(sismo.getLatitud());
         f.longitud = String.valueOf(sismo.getLongitud());
-        f.departamento = texto(sismo.getDepartamento());
-        f.provincia = texto(sismo.getProvincia());
-        f.distritoReferencia = texto(sismo.getDistritoReferencia());
+        f.distritoId = sismo.getDistrito() == null ? "" : String.valueOf(sismo.getDistrito().getId());
+        f.referencia = texto(sismo.getReferencia());
         f.intensidad = texto(sismo.getIntensidad());
-        f.codigoEstacion = texto(sismo.getCodigoEstacion());
+        f.estacionId = sismo.getEstacion() == null ? "" : String.valueOf(sismo.getEstacion().getId());
         f.estado = texto(sismo.getEstado());
         return f;
     }
 
     /**
      * Pasa los valores al objeto Sismo. Solo debe llamarse cuando SismoValidador no encontró errores,
-     * porque convierte los textos a número y fecha.
+     * porque convierte los textos a número, fecha e id. El distrito y la estación se asignan solo con
+     * su id; el repositorio los reemplaza por las entidades administradas al guardar.
      */
     public void copiarEn(Sismo sismo) {
         sismo.setCodigo(codigo);
@@ -75,11 +75,10 @@ public class SismoFormulario {
         sismo.setProfundidad(SismoValidador.aNumero(profundidad));
         sismo.setLatitud(SismoValidador.aNumero(latitud));
         sismo.setLongitud(SismoValidador.aNumero(longitud));
-        sismo.setDepartamento(departamento);
-        sismo.setProvincia(provincia);
-        sismo.setDistritoReferencia(distritoReferencia);
+        sismo.setDistrito(Distrito.conId(Long.valueOf(distritoId)));
+        sismo.setReferencia(referencia.isBlank() ? null : referencia);
         sismo.setIntensidad(intensidad.isBlank() ? null : intensidad);
-        sismo.setCodigoEstacion(codigoEstacion.isBlank() ? null : codigoEstacion.toUpperCase());
+        sismo.setEstacion(estacionId.isBlank() ? null : EstacionMonitoreo.conId(Long.valueOf(estacionId)));
         if (!estado.isBlank()) {
             sismo.setEstado(estado);
         }
@@ -99,11 +98,10 @@ public class SismoFormulario {
     public String getProfundidad() { return profundidad; }
     public String getLatitud() { return latitud; }
     public String getLongitud() { return longitud; }
-    public String getDepartamento() { return departamento; }
-    public String getProvincia() { return provincia; }
-    public String getDistritoReferencia() { return distritoReferencia; }
+    public String getDistritoId() { return distritoId; }
+    public String getReferencia() { return referencia; }
     public String getIntensidad() { return intensidad; }
-    public String getCodigoEstacion() { return codigoEstacion; }
+    public String getEstacionId() { return estacionId; }
     public String getEstado() { return estado; }
 
     public void setEstado(String estado) { this.estado = estado == null ? "" : estado; }
