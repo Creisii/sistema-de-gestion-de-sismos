@@ -1,39 +1,55 @@
 package com.grupo6.sistema.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
 import java.time.LocalDateTime;
 
-/**
- * Reporte de afectación registrado después de un sismo (información simulada).
- */
+/** Reporte de afectación registrado después de un sismo. Un sismo puede tener muchos reportes. */
+@Entity
+@Table(name = "reporte_afectacion")
 public class ReporteAfectacion {
 
     public static final String ESTADO_PENDIENTE = "Pendiente";
     public static final String ESTADO_VERIFICADO = "Verificado";
     public static final String ESTADO_CERRADO = "Cerrado";
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long sismoId;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "sismo_id", nullable = false)
+    private Sismo sismo;
+
+    @Column(name = "ubicacion", nullable = false, length = 150)
     private String ubicacion;
+
+    @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
+
+    @Column(name = "tipo_afectacion", nullable = false, length = 50)
     private String tipoAfectacion;
+
+    @Column(name = "descripcion", nullable = false, length = 500)
     private String descripcion;
+
+    @Column(name = "nivel", nullable = false, length = 20)
     private String nivel;
+
+    @Column(name = "personas_afectadas", nullable = false)
     private int personasAfectadas;
+
+    @Column(name = "estado", nullable = false, length = 20)
     private String estado;
 
     public ReporteAfectacion() {
-    }
-
-    public ReporteAfectacion(Long id, Long sismoId, String ubicacion, LocalDateTime fechaHora, String tipoAfectacion, String descripcion, String nivel, int personasAfectadas, String estado) {
-        this.id = id;
-        this.sismoId = sismoId;
-        this.ubicacion = ubicacion;
-        this.fechaHora = fechaHora;
-        this.tipoAfectacion = tipoAfectacion;
-        this.descripcion = descripcion;
-        this.nivel = nivel;
-        this.personasAfectadas = personasAfectadas;
-        this.estado = estado;
     }
 
     public Long getId() {
@@ -44,12 +60,12 @@ public class ReporteAfectacion {
         this.id = id;
     }
 
-    public Long getSismoId() {
-        return sismoId;
+    public Sismo getSismo() {
+        return sismo;
     }
 
-    public void setSismoId(Long sismoId) {
-        this.sismoId = sismoId;
+    public void setSismo(Sismo sismo) {
+        this.sismo = sismo;
     }
 
     public String getUbicacion() {

@@ -1,31 +1,45 @@
 package com.grupo6.sistema.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
 import java.time.LocalDateTime;
 
-/**
- * Actualización de seguimiento de un sismo relevante (Registrado → En evaluación → En seguimiento → Cerrado).
- */
+/** Actualización de seguimiento de un sismo relevante. Un sismo puede tener muchas actualizaciones. */
+@Entity
+@Table(name = "seguimiento_sismo")
 public class SeguimientoSismo {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long sismoId;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "sismo_id", nullable = false)
+    private Sismo sismo;
+
+    @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion;
+
+    @Column(name = "responsable", nullable = false, length = 100)
     private String responsable;
+
+    @Column(name = "estado", nullable = false, length = 20)
     private String estado;
+
+    @Column(name = "observaciones", nullable = false, length = 500)
     private String observaciones;
+
+    @Column(name = "acciones_realizadas", nullable = false, length = 500)
     private String accionesRealizadas;
 
     public SeguimientoSismo() {
-    }
-
-    public SeguimientoSismo(Long id, Long sismoId, LocalDateTime fechaActualizacion, String responsable, String estado, String observaciones, String accionesRealizadas) {
-        this.id = id;
-        this.sismoId = sismoId;
-        this.fechaActualizacion = fechaActualizacion;
-        this.responsable = responsable;
-        this.estado = estado;
-        this.observaciones = observaciones;
-        this.accionesRealizadas = accionesRealizadas;
     }
 
     public Long getId() {
@@ -36,12 +50,12 @@ public class SeguimientoSismo {
         this.id = id;
     }
 
-    public Long getSismoId() {
-        return sismoId;
+    public Sismo getSismo() {
+        return sismo;
     }
 
-    public void setSismoId(Long sismoId) {
-        this.sismoId = sismoId;
+    public void setSismo(Sismo sismo) {
+        this.sismo = sismo;
     }
 
     public LocalDateTime getFechaActualizacion() {

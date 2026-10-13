@@ -2,56 +2,54 @@ package com.grupo6.sistema.repository;
 
 import com.grupo6.sistema.model.Departamento;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Repositorio CRUD de departamentos en memoria.
- */
-public class DepartamentoRepository {
+/** Repositorio JPA de departamentos. */
+public class DepartamentoRepository extends RepositorioJpa<Departamento> {
 
-    private final List<Departamento> datos = new CopyOnWriteArrayList<>();
-    private final AtomicLong siguienteId = new AtomicLong(1);
-
-    public Departamento agregar(Departamento departamento) {
-        departamento.setId(siguienteId.getAndIncrement());
-        datos.add(departamento);
-        return departamento;
+    public DepartamentoRepository() {
+        super(Departamento.class);
     }
 
-    public List<Departamento> listar() {
-        return List.copyOf(datos);
-    }
-
-    public Optional<Departamento> buscarPorId(long id) {
-        return datos.stream().filter(x -> x.getId() == id).findFirst();
+    @Override
+    protected String ordenListado() {
+        return "e.nombre";
     }
 
     public Optional<Departamento> buscarPorCodigo(String codigo) {
-        if (codigo == null) {
-            return Optional.empty();
-        }
-        return datos.stream()
-                .filter(x -> x.getCodigo().equalsIgnoreCase(codigo.trim()))
-                .findFirst();
+        return buscarUno("SELECT d FROM Departamento d WHERE d.codigo = :valor", codigo);
     }
 
-    public boolean existeCodigo(String codigo) {
-        return buscarPorCodigo(codigo).isPresent();
+    public boolean existeNombre(String nombre, Long idExcluido) {
+        String jpql = "SELECT COUNT(d) FROM Departamento d WHERE LOWER(d.nombre) = LOWER(:nombre)"
+                + (idExcluido == null ? "" : " AND d.id <> :id");
+        return consultar(em -> {
+            var consulta = em.createQuery(jpql, Long.class).setParameter("nombre", nombre);
+            if (idExcluido != null) {
+                consulta.setParameter("id", idExcluido);
+            }
+            return consulta.getSingleResult() > 0;
+        }, "No se pudo validar el nombre.");
     }
 
-    public boolean actualizar(Departamento departamento) {
-        Optional<Departamento> actual = buscarPorId(departamento.getId());
-        if (actual.isEmpty()) {
-            return false;
-        }
-        datos.set(datos.indexOf(actual.get()), departamento);
-        return true;
+    public long contarProvincias(long departamentoId) {
+        return contar("SELECT COUNT(p) FROM Provincia p WHERE p.departamento.id = :valor", departamentoId);
     }
 
-    public boolean eliminar(long id) {
-        return datos.removeIf(x -> x.getId() == id);
+    /** Cantidad de provincias de cada departamento: id del departamento -> cantidad. */
+    public Map<Long, Long> contarProvinciasPorDepartamento() {
+        return consultar(em -> {
+            List<Object[]> filas = em.createQuery(
+                    "SELECT p.departamento.id, COUNT(p) FROM Provincia p GROUP BY p.departamento.id",
+                    Object[].class).getResultList();
+            Map<Long, Long> conteos = new HashMap<>();
+            for (Object[] fila : filas) {
+                conteos.put((Long) fila[0], (Long) fila[1]);
+            }
+            return conteos;
+        }, "No se pudo contar las provincias.");
     }
 }

@@ -2,6 +2,7 @@ package com.grupo6.sistema.servlet;
 
 import com.grupo6.sistema.listener.AplicacionListener;
 import com.grupo6.sistema.model.Sismo;
+import com.grupo6.sistema.repository.PersistenciaException;
 import com.grupo6.sistema.repository.SismoRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -54,14 +55,20 @@ public class SismoEliminarServlet extends HttpServlet {
             return;
         }
 
-        repositorio().eliminar(sismo.getId());
+        try {
+            repositorio().eliminar(sismo.getId());
+        } catch (PersistenciaException ex) {
+            request.setAttribute("motivoBloqueo", ex.getMessage());
+            mostrarConfirmacion(request, response, sismo);
+            return;
+        }
 
         response.sendRedirect(request.getContextPath() + "/sismos?eliminado="
                 + URLEncoder.encode(sismo.getCodigo(), StandardCharsets.UTF_8));
     }
 
     private boolean estaBloqueado(Sismo sismo) {
-        return Sismo.ESTADO_EN_SEGUIMIENTO.equals(sismo.getEstado());
+        return sismo.isEnSeguimiento();
     }
 
     private void mostrarConfirmacion(HttpServletRequest request, HttpServletResponse response, Sismo sismo)

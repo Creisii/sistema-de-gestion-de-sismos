@@ -1,38 +1,82 @@
 package com.grupo6.sistema.model;
 
-import java.time.LocalDate;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
-/**
- * Estación de monitoreo que registra eventos sísmicos. Una estación puede registrar muchos sismos.
- */
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+/** Estación de monitoreo que registra eventos sísmicos. Una estación puede registrar muchos sismos. */
+@Entity
+@Table(name = "estacion_monitoreo")
 public class EstacionMonitoreo {
 
     public static final String ESTADO_ACTIVA = "Activa";
     public static final String ESTADO_INACTIVA = "Inactiva";
+    public static final String[] ESTADOS_VALIDOS = {ESTADO_ACTIVA, ESTADO_INACTIVA};
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "codigo", nullable = false, unique = true, length = 10)
     private String codigo;
+
+    @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
-    private String departamento;
-    private String provincia;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "distrito_id", nullable = false)
+    private Distrito distrito;
+
+    @Column(name = "latitud", nullable = false)
     private double latitud;
+
+    @Column(name = "longitud", nullable = false)
     private double longitud;
+
+    @Column(name = "fecha_instalacion", nullable = false)
     private LocalDate fechaInstalacion;
+
+    @Column(name = "estado", nullable = false, length = 10)
     private String estado;
 
     public EstacionMonitoreo() {
     }
 
-    public EstacionMonitoreo(Long id, String codigo, String nombre, String departamento, String provincia, double latitud, double longitud, LocalDate fechaInstalacion, String estado) {
+    public EstacionMonitoreo(Long id, String codigo, String nombre, Distrito distrito, double latitud,
+                             double longitud, LocalDate fechaInstalacion, String estado) {
         this.id = id;
         this.codigo = codigo;
         this.nombre = nombre;
-        this.departamento = departamento;
-        this.provincia = provincia;
+        this.distrito = distrito;
         this.latitud = latitud;
         this.longitud = longitud;
         this.fechaInstalacion = fechaInstalacion;
         this.estado = estado;
+    }
+
+    /** Referencia solo con el id; el repositorio la reemplaza por la entidad administrada. */
+    public static EstacionMonitoreo conId(Long id) {
+        EstacionMonitoreo estacion = new EstacionMonitoreo();
+        estacion.setId(id);
+        return estacion;
+    }
+
+    /** Una estación inactiva no puede recibir nuevos registros de sismos. */
+    public boolean isActiva() {
+        return ESTADO_ACTIVA.equals(estado);
+    }
+
+    public String getFechaInstalacionTexto() {
+        return fechaInstalacion == null ? "" : fechaInstalacion.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
 
     public Long getId() {
@@ -59,20 +103,12 @@ public class EstacionMonitoreo {
         this.nombre = nombre;
     }
 
-    public String getDepartamento() {
-        return departamento;
+    public Distrito getDistrito() {
+        return distrito;
     }
 
-    public void setDepartamento(String departamento) {
-        this.departamento = departamento;
-    }
-
-    public String getProvincia() {
-        return provincia;
-    }
-
-    public void setProvincia(String provincia) {
-        this.provincia = provincia;
+    public void setDistrito(Distrito distrito) {
+        this.distrito = distrito;
     }
 
     public double getLatitud() {
@@ -105,10 +141,5 @@ public class EstacionMonitoreo {
 
     public void setEstado(String estado) {
         this.estado = estado;
-    }
-
-    /** Una estación inactiva no puede recibir nuevos registros de sismos. */
-    public boolean isActiva() {
-        return ESTADO_ACTIVA.equals(estado);
     }
 }

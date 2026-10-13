@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:set var="seccion" value=""/>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,10 +10,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
 </head>
 <body>
-<div class="barra-superior">
-    <span class="marca">CSSP <span>Sistema de Gestión de Sismos</span></span>
-    <a href="${pageContext.request.contextPath}/sismos">Sismos</a>
-</div>
+<%@ include file="/WEB-INF/views/comun/barra.jspf" %>
 <main class="contenedor">
     <h1>404 - No encontrado</h1>
     <section class="tarjeta">

@@ -2,7 +2,9 @@ package com.grupo6.sistema.servlet;
 
 import com.grupo6.sistema.listener.AplicacionListener;
 import com.grupo6.sistema.model.Sismo;
+import com.grupo6.sistema.repository.DistritoRepository;
 import com.grupo6.sistema.repository.EstacionMonitoreoRepository;
+import com.grupo6.sistema.repository.PersistenciaException;
 import com.grupo6.sistema.repository.SismoRepository;
 import com.grupo6.sistema.validacion.SismoFormulario;
 import com.grupo6.sistema.validacion.SismoValidador;
@@ -18,8 +20,8 @@ import java.util.Map;
 
 /**
  * HU-02: registrar un nuevo sismo.
- * GET muestra el formulario vacío; POST valida en el servidor (SismoValidador), registra el
- * sismo con estado Registrado y redirige al detalle (Post/Redirect/Get).
+ * GET muestra el formulario vacío; POST valida en el servidor (SismoValidador), guarda el sismo
+ * en MySQL con estado Registrado y redirige al detalle (Post/Redirect/Get).
  */
 @WebServlet(name = "SismoNuevoServlet", urlPatterns = "/sismos/nuevo")
 public class SismoNuevoServlet extends HttpServlet {
@@ -43,8 +45,8 @@ public class SismoNuevoServlet extends HttpServlet {
         SismoFormulario formulario = SismoFormulario.desdeRequest(request);
         formulario.setEstado(Sismo.ESTADO_REGISTRADO); // HU-08: todo sismo nuevo nace como Registrado
 
-        SismoRepository sismos = repositorioSismos();
-        SismoValidador validador = new SismoValidador(sismos, repositorioEstaciones());
+        SismoValidador validador = new SismoValidador(repositorioSismos(), repositorioDistritos(),
+                repositorioEstaciones());
         Map<String, String> errores = validador.validar(formulario, null);
 
         if (!errores.isEmpty()) {
@@ -55,11 +57,14 @@ public class SismoNuevoServlet extends HttpServlet {
         Sismo sismo = new Sismo();
         formulario.copiarEn(sismo);
         sismo.setEstado(Sismo.ESTADO_REGISTRADO);
-        Sismo creado = sismos.agregar(sismo);
-
-        response.sendRedirect(request.getContextPath()
-                + "/sismos/detalle?id=" + creado.getId()
-                + "&creado=1");
+        try {
+            Sismo creado = repositorioSismos().agregar(sismo);
+            response.sendRedirect(request.getContextPath()
+                    + "/sismos/detalle?id=" + creado.getId()
+                    + "&creado=1");
+        } catch (PersistenciaException ex) {
+            mostrarFormulario(request, response, formulario, Map.of("general", ex.getMessage()));
+        }
     }
 
     private void mostrarFormulario(HttpServletRequest request, HttpServletResponse response,
@@ -68,6 +73,7 @@ public class SismoNuevoServlet extends HttpServlet {
         request.setAttribute("modo", "nuevo");
         request.setAttribute("formulario", formulario);
         request.setAttribute("errores", errores);
+        request.setAttribute("distritos", repositorioDistritos().listar());
         request.setAttribute("estaciones", repositorioEstaciones().listar());
         request.setAttribute("intensidades", Sismo.INTENSIDADES);
         request.setAttribute("estados", Sismo.ESTADOS_VALIDOS);
@@ -78,6 +84,11 @@ public class SismoNuevoServlet extends HttpServlet {
     private SismoRepository repositorioSismos() {
         return (SismoRepository) getServletContext()
                 .getAttribute(AplicacionListener.REPOSITORIO_SISMOS);
+    }
+
+    private DistritoRepository repositorioDistritos() {
+        return (DistritoRepository) getServletContext()
+                .getAttribute(AplicacionListener.REPOSITORIO_DISTRITOS);
     }
 
     private EstacionMonitoreoRepository repositorioEstaciones() {

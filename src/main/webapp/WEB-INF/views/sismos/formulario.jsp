@@ -7,11 +7,12 @@
     modo         -> "nuevo" o "editar"
     formulario   -> SismoFormulario con los valores a mostrar
     errores      -> Map campo -> mensaje (vacío si no hay errores)
-    estaciones, intensidades, estados -> listas para los <select>
+    distritos, estaciones, intensidades, estados -> listas para los <select>
     sismoId      -> solo en modo "editar"
 --%>
 <c:set var="esEditar" value="${modo eq 'editar'}"/>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
+<c:set var="seccion" value="sismos"/>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -21,10 +22,7 @@
     <link rel="stylesheet" href="${ctx}/css/estilos.css">
 </head>
 <body>
-<div class="barra-superior">
-    <span class="marca">CSSP <span>Sistema de Gestión de Sismos</span></span>
-    <a href="${ctx}/sismos">Sismos</a>
-</div>
+<%@ include file="/WEB-INF/views/comun/barra.jspf" %>
 <main class="contenedor">
     <c:choose>
         <c:when test="${esEditar}">
@@ -110,17 +108,17 @@
                 </label>
                 <label>
                     <span>Estación que lo registró</span>
-                    <select name="codigoEstacion" class="${not empty errores.codigoEstacion ? 'campo-error' : ''}">
+                    <select name="estacionId" class="${not empty errores.estacionId ? 'campo-error' : ''}">
                         <option value="">Sin estación</option>
                         <c:forEach items="${estaciones}" var="e">
-                            <c:set var="seleccionada" value="${e.codigo eq formulario.codigoEstacion}"/>
-                            <option value="${e.codigo}" ${seleccionada ? 'selected' : ''} ${!e.activa and !seleccionada ? 'disabled' : ''}>
+                            <c:set var="seleccionada" value="${e.id.toString() eq formulario.estacionId}"/>
+                            <option value="${e.id}" ${seleccionada ? 'selected' : ''} ${!e.activa and !seleccionada ? 'disabled' : ''}>
                                 <c:out value="${e.codigo} · ${e.nombre}"/>${e.activa ? '' : ' (inactiva)'}
                             </option>
                         </c:forEach>
                     </select>
                     <c:choose>
-                        <c:when test="${not empty errores.codigoEstacion}"><span class="ayuda-error"><c:out value="${errores.codigoEstacion}"/></span></c:when>
+                        <c:when test="${not empty errores.estacionId}"><span class="ayuda-error"><c:out value="${errores.estacionId}"/></span></c:when>
                         <c:otherwise><span class="ayuda">Las estaciones inactivas no pueden recibir nuevos registros.</span></c:otherwise>
                     </c:choose>
                 </label>
@@ -149,23 +147,34 @@
                     </c:choose>
                 </label>
                 <label>
-                    <span class="campo-obligatorio">Departamento</span>
-                    <input name="departamento" value="${fn:escapeXml(formulario.departamento)}"
-                           class="${not empty errores.departamento ? 'campo-error' : ''}">
-                    <c:if test="${not empty errores.departamento}"><span class="ayuda-error"><c:out value="${errores.departamento}"/></span></c:if>
+                    <span class="campo-obligatorio">Distrito</span>
+                    <%-- HU-09: solo se pueden elegir distritos del catálogo de ubicaciones.
+                         HU-21 (Víctor) reemplaza esta lista por la selección en cascada. --%>
+                    <select name="distritoId" class="${not empty errores.distritoId ? 'campo-error' : ''}">
+                        <option value="">Seleccione el distrito</option>
+                        <c:set var="grupoActual" value=""/>
+                        <c:forEach items="${distritos}" var="dis" varStatus="st">
+                            <c:set var="grupo" value="${dis.provincia.departamento.nombre} / ${dis.provincia.nombre}"/>
+                            <c:if test="${grupo ne grupoActual}">
+                                <c:if test="${not st.first}"></optgroup></c:if>
+                                <optgroup label="<c:out value='${grupo}'/>">
+                                <c:set var="grupoActual" value="${grupo}"/>
+                            </c:if>
+                            <option value="${dis.id}" ${dis.id.toString() eq formulario.distritoId ? 'selected' : ''}><c:out value="${dis.nombre}"/></option>
+                            <c:if test="${st.last}"></optgroup></c:if>
+                        </c:forEach>
+                    </select>
+                    <c:choose>
+                        <c:when test="${not empty errores.distritoId}"><span class="ayuda-error"><c:out value="${errores.distritoId}"/></span></c:when>
+                        <c:otherwise><span class="ayuda">Agrupados por departamento y provincia.</span></c:otherwise>
+                    </c:choose>
                 </label>
-
                 <label>
-                    <span class="campo-obligatorio">Provincia</span>
-                    <input name="provincia" value="${fn:escapeXml(formulario.provincia)}"
-                           class="${not empty errores.provincia ? 'campo-error' : ''}">
-                    <c:if test="${not empty errores.provincia}"><span class="ayuda-error"><c:out value="${errores.provincia}"/></span></c:if>
-                </label>
-                <label>
-                    <span class="campo-obligatorio">Distrito o referencia</span>
-                    <input name="distritoReferencia" value="${fn:escapeXml(formulario.distritoReferencia)}"
-                           class="${not empty errores.distritoReferencia ? 'campo-error' : ''}">
-                    <c:if test="${not empty errores.distritoReferencia}"><span class="ayuda-error"><c:out value="${errores.distritoReferencia}"/></span></c:if>
+                    <span>Referencia</span>
+                    <input name="referencia" maxlength="150" placeholder="Ej. 12 km al SO de Chivay"
+                           value="${fn:escapeXml(formulario.referencia)}"
+                           class="${not empty errores.referencia ? 'campo-error' : ''}">
+                    <c:if test="${not empty errores.referencia}"><span class="ayuda-error"><c:out value="${errores.referencia}"/></span></c:if>
                 </label>
                 <c:choose>
                     <c:when test="${esEditar}">
