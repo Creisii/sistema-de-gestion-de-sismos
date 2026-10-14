@@ -31,6 +31,7 @@ public class SismoBusqueda {
 
     // Valores tal como se escribieron (para volver a mostrarlos en el formulario)
     private String departamentoIdTexto = "";
+    private String terminoTexto = "";
     private String magnitudMinTexto = "";
     private String magnitudMaxTexto = "";
     private String desdeTexto = "";
@@ -51,6 +52,8 @@ public class SismoBusqueda {
 
     public static SismoBusqueda desdeRequest(HttpServletRequest request) {
         SismoBusqueda b = new SismoBusqueda();
+
+        b.terminoTexto = limpiar(request.getParameter("buscar"));
 
         b.departamentoIdTexto = limpiar(request.getParameter("departamentoId"));
         if (!b.departamentoIdTexto.isEmpty()) {
@@ -102,13 +105,14 @@ public class SismoBusqueda {
     }
 
     public boolean isTieneFiltros() {
-        return departamentoId != null || magnitudMin != null || magnitudMax != null
+        return !terminoTexto.isEmpty() || departamentoId != null || magnitudMin != null || magnitudMax != null
                 || desde != null || hasta != null;
     }
 
     /** Filtros actuales como parámetros de URL (sin orden ni página). */
     private Map<String, String> parametrosFiltro() {
         Map<String, String> p = new LinkedHashMap<>();
+        p.put("buscar", terminoTexto);
         p.put("departamentoId", departamentoIdTexto);
         p.put("magnitudMin", magnitudMinTexto);
         p.put("magnitudMax", magnitudMaxTexto);
@@ -191,6 +195,7 @@ public class SismoBusqueda {
     }
 
     public String getDepartamentoIdTexto() { return departamentoIdTexto; }
+    public String getTerminoTexto() { return terminoTexto; }
     public String getMagnitudMinTexto() { return magnitudMinTexto; }
     public String getMagnitudMaxTexto() { return magnitudMaxTexto; }
     public String getDesdeTexto() { return desdeTexto; }
