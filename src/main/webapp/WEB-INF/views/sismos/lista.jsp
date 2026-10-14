@@ -52,6 +52,15 @@
                 </select>
             </label>
             <label>
+                <span>Estado</span>
+                <select name="estado">
+                    <option value="">Todos</option>
+                    <option value="Registrado" ${busqueda.estado eq 'Registrado' ? 'selected' : ''}>Registrado</option>
+                    <option value="En evaluación" ${busqueda.estado eq 'En evaluación' ? 'selected' : ''}>En evaluación</option>
+                    <option value="En seguimiento" ${busqueda.estado eq 'En seguimiento' ? 'selected' : ''}>En seguimiento</option>
+                </select>
+            </label>
+            <label>
                 <span>Magnitud desde</span>
                 <input name="magnitudMin" type="number" step="0.1" min="0" max="10" placeholder="Ej. 4.0"
                        value="<c:out value='${busqueda.magnitudMinTexto}'/>">
