@@ -27,8 +27,8 @@ Para volver a los datos de ejemplo (por ejemplo, antes de grabar el video), ejec
 |----|-------------|-------------|--------|
 | HU-15 | Buscar, filtrar, ordenar y paginar sismos | José | ✅ |
 | HU-09 | Gestionar ubicaciones geográficas | José | ✅ |
-| HU-21 | Seleccionar la ubicación en cascada | Víctor | ⏳ |
-| HU-10 | Gestionar estaciones de monitoreo | Víctor | ⏳ |
+| HU-21 | Seleccionar la ubicación en cascada | Víctor | ✅ |
+| HU-10 | Gestionar estaciones de monitoreo | Víctor | ✅ |
 | HU-11 | Asociar un sismo a la estación que lo registró | Cristian | ⏳ |
 | HU-30 | Filtrar sismos por estado del evento | Cristian | ⏳ |
 | HU-31 | Buscar un sismo por código o referencia geográfica | Nick | ✅ |
@@ -81,18 +81,10 @@ database/   01_schema.sql y 02_datos_iniciales.sql
 
 ## Guía rápida para las HU pendientes
 
-- **HU-10 Estaciones (Víctor):** la entidad `EstacionMonitoreo` y su repositorio ya existen
-  (`listar`, `buscarPorId`, `buscarPorCodigo`, `listarActivas`, `contarSismos`, `agregar`, `actualizar`, `eliminar`).
-  Falta el CRUD de pantallas en `/estaciones`, igual que el de sismos, y el enlace en `comun/barra.jspf`.
-- **HU-21 Cascada (Víctor):** en `sismos/formulario.jsp` reemplazar la lista de distritos por tres listas
-  (departamento → provincia → distrito). `ProvinciaRepository.listarPorDepartamento` y
-  `DistritoRepository.listarPorProvincia` ya existen. El formulario debe seguir enviando `distritoId`.
 - **HU-11 Sismo y estación (Cristian):** la relación `Sismo N ── 1 Estación` y la regla de estación inactiva
   ya están en la base (`SismoValidador`). Queda completar los criterios de la HU en las pantallas.
 - **HU-30 Estado (Cristian):** agregar el filtro en `SismoBusqueda`, su condición JPQL en
   `SismoRepository.agregarCondiciones` y el campo en el formulario de filtros de `sismos/lista.jsp`.
-- **HU-31 Código o referencia geográfica (Nick):** implementada en el listado de sismos; busca códigos
-  exactos y coincidencias parciales sin distinguir mayúsculas en la referencia, distrito o provincia.
 
 ## Rutas
 
