@@ -36,6 +36,7 @@ public class SismoBusqueda {
     private String magnitudMaxTexto = "";
     private String desdeTexto = "";
     private String hastaTexto = "";
+    private String estado ="";
 
     // Valores ya validados (null = filtro no aplicado)
     private Long departamentoId;
@@ -83,6 +84,8 @@ public class SismoBusqueda {
             b.desde = null;
             b.hasta = null;
         }
+        
+        b.estado = limpiar(request.getParameter("estado"));
 
         String orden = limpiar(request.getParameter("orden"));
         if (ORDENES_VALIDOS.contains(orden)) {
@@ -106,7 +109,7 @@ public class SismoBusqueda {
 
     public boolean isTieneFiltros() {
         return !terminoTexto.isEmpty() || departamentoId != null || magnitudMin != null || magnitudMax != null
-                || desde != null || hasta != null;
+                || desde != null || hasta != null || !estado.isEmpty();
     }
 
     /** Filtros actuales como parámetros de URL (sin orden ni página). */
@@ -118,6 +121,7 @@ public class SismoBusqueda {
         p.put("magnitudMax", magnitudMaxTexto);
         p.put("desde", desdeTexto);
         p.put("hasta", hastaTexto);
+        p.put("estado",estado);
         return p;
     }
 
@@ -200,6 +204,7 @@ public class SismoBusqueda {
     public String getMagnitudMaxTexto() { return magnitudMaxTexto; }
     public String getDesdeTexto() { return desdeTexto; }
     public String getHastaTexto() { return hastaTexto; }
+    public String getEstado() { return estado; }
     public Long getDepartamentoId() { return departamentoId; }
     public Double getMagnitudMin() { return magnitudMin; }
     public Double getMagnitudMax() { return magnitudMax; }

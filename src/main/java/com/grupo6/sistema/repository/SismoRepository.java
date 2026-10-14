@@ -127,6 +127,9 @@ public class SismoRepository extends RepositorioJpa<Sismo> {
             condiciones.add("s.fechaHora < :hasta");
             parametros.put("hasta", b.getHasta().plusDays(1).atStartOfDay());
         }
-        // HU-30 (filtro por estado) se agrega aquí.
+        if (b.getEstado() != null && !b.getEstado().isEmpty()) {
+            condiciones.add("s.estado = :estado");
+            parametros.put("estado", b.getEstado());
+        }
     }
 }
