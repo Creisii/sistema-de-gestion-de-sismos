@@ -10,5 +10,6 @@
     <nav class="menu">
         <a href="${pageContext.request.contextPath}/sismos" class="${seccion eq 'sismos' ? 'activo' : ''}">Sismos</a>
         <a href="${pageContext.request.contextPath}/ubicaciones" class="${seccion eq 'ubicaciones' ? 'activo' : ''}">Ubicaciones</a>
+        <a href="${pageContext.request.contextPath}/estaciones" class="${seccion eq 'estaciones' ? 'activo' : ''}">Estaciones</a>
     </nav>
 </div>
